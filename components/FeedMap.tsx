@@ -1,44 +1,54 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import type { Map as LeafletMap } from 'leaflet';
+
+interface FeedPoint {
+  lat: number;
+  lng: number;
+  intensity: number;
+}
+
+interface SummaryResponse {
+  stats?: {
+    totalFeeds: number;
+    uniqueFeeders: number;
+  };
+  heatmap?: FeedPoint[];
+}
 
 export default function FeedMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
+  const map = useRef<LeafletMap | null>(null);
   const [stats, setStats] = useState({ totalFeeds: 0, activeFeeders: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (map.current) return; // Initialize only once
+    if (map.current) return;
 
     const initializeMap = async () => {
       if (!mapContainer.current) return;
 
       try {
-        // Import Leaflet
         const L = (await import('leaflet')).default;
-        require('leaflet/dist/leaflet.css');
 
-        // Create map instance
         map.current = L.map(mapContainer.current, {
           center: [20.5937, 78.9629],
           zoom: 5,
         });
 
-        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
         }).addTo(map.current);
 
-        // Fetch and display data
         const response = await fetch('/api/summary?range=week');
-        const data = await response.json();
+        const data: SummaryResponse = await response.json();
 
         console.log('Data received:', data);
 
-        if (data.heatmap && data.heatmap.length > 0) {
-          // Add circle markers for each feed location
-          data.heatmap.forEach((point: any) => {
+        if (data.heatmap?.length) {
+          data.heatmap.forEach((point) => {
             L.circleMarker([point.lat, point.lng], {
               radius: 8,
               fillColor: '#10b981',
@@ -47,7 +57,7 @@ export default function FeedMap() {
               fillOpacity: 0.7,
             })
               .bindPopup(`<strong>${point.intensity} feeds</strong><br/>in this area`)
-              .addTo(map.current);
+              .addTo(map.current!);
           });
         }
 
@@ -106,12 +116,12 @@ export default function FeedMap() {
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-95">
           <div className="text-center p-8">
             <p className="text-xl text-gray-700 mb-4">🌱 No feeds yet</p>
-            <a 
+            <Link 
               href="/"
               className="inline-block px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
             >
               Record First Feed
-            </a>
+            </Link>
           </div>
         </div>
       )}

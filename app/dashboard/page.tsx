@@ -1,6 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, TrendingUp, Calendar, Download, Trash2, Award } from 'lucide-react';
+import Link from 'next/link';
 
 interface FeedRecord {
   id: string;
@@ -25,11 +26,7 @@ export default function Dashboard() {
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  useEffect(() => {
-    loadLocalStats();
-  }, []);
-
-  const loadLocalStats = () => {
+  const loadLocalStats = useCallback(() => {
     try {
       const stored = localStorage.getItem('onemeal_user_feeds');
       const feeds: FeedRecord[] = stored ? JSON.parse(stored) : [];
@@ -48,7 +45,11 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error loading stats:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadLocalStats();
+  }, [loadLocalStats]);
 
   const calculateStreak = (feeds: FeedRecord[]): number => {
     if (feeds.length === 0) return 0;
@@ -167,12 +168,12 @@ export default function Dashboard() {
             <div className="text-center py-12">
               <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">No feeds recorded yet</p>
-              <a 
+              <Link 
                 href="/"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
               >
                 Record Your First Feed
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto">

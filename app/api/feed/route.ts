@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Invalid data',
-          details: error.errors,
+          details: error.issues, // Changed from error.errors to error.issues
         },
         { status: 400 }
       );
@@ -123,10 +123,7 @@ export async function POST(request: NextRequest) {
     
     console.error('Feed submission error:', error);
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: 'Something went wrong. Please try again.',
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

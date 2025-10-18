@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import type { FC } from 'react';
 
 export default function MapPage() {
-  const [FeedMap, setFeedMap] = useState<any>(null);
+  const [FeedMap, setFeedMap] = useState<FC | null>(null);
 
   useEffect(() => {
-    // Dynamically import the map component on client side only
     import('@/components/FeedMap').then((mod) => {
       setFeedMap(() => mod.default);
     });
@@ -29,18 +30,19 @@ export default function MapPage() {
             <FeedMap />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
             </div>
           )}
         </div>
         
         <div className="mt-6 text-center">
-          <a 
+          <Link 
             href="/"
-            className="text-emerald-600 hover:text-emerald-700 font-medium"
+            className="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium"
           >
-            ← Back to Home
-          </a>
+            <span aria-hidden="true">←</span>
+            <span className="ml-1">Back to Home</span>
+          </Link>
         </div>
       </div>
     </div>
