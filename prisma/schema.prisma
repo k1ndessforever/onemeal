@@ -1,0 +1,59 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core feed event model - stores rounded coordinates only
+model Feed {
+  id           String   @id @default(cuid())
+  lat          Float    // Rounded to 3 decimal places (~111m precision)
+  lng          Float    // Rounded to 3 decimal places
+  createdAt    DateTime @default(now())
+  anonymousId  String   // UUID stored in user's browser
+  
+  // Index for efficient queries
+  @@index([createdAt])
+  @@index([anonymousId])
+  @@index([lat, lng])
+}
+
+// Aggregated statistics - kept permanently
+model DailyStats {
+  id              String   @id @default(cuid())
+  date            DateTime @unique @db.Date
+  totalFeeds      Int      @default(0)
+  uniqueFeeders   Int      @default(0)
+  topCities       Json?    // Store as JSON: { "Mumbai": 45, "Delhi": 32 }
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([date])
+}
+
+// Rate limiting - track submissions per user/IP
+model RateLimit {
+  id          String   @id @default(cuid())
+  identifier  String   // anonymousId or IP hash
+  count       Int      @default(1)
+  windowStart DateTime @default(now())
+  
+  @@unique([identifier, windowStart])
+  @@index([identifier])
+}
+
+// Regional aggregation for privacy-safe visualization
+model RegionAggregate {
+  id          String   @id @default(cuid())
+  regionKey   String   // Format: "lat_lng" rounded to 2 decimals (~1km grid)
+  feedCount   Int      @default(0)
+  lastFeedAt  DateTime @updatedAt
+  
+  @@unique([regionKey])
+  @@index([regionKey])
+}
