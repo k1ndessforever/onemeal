@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   
-  // Disable ESLint during builds (you can still run it manually)
+  // Add this to disable ESLint warnings
   eslint: {
     ignoreDuringBuilds: true,
   },
